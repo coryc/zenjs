@@ -3,7 +3,7 @@
 XML Style Template Engine
 
 ## Installation
-
+    This is not active yet but will be
     $ npm install zenjs
 
 ## Features
