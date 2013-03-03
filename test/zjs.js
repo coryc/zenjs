@@ -5,4 +5,7 @@
 var zjs = require('..');
 
 
-console.log(zjs.test());
+// render a string
+zjs.renderFile('./test/views/view.zjs', {}, function(err, result){
+	console.log(result);	
+});
