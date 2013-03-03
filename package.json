@@ -1,0 +1,21 @@
+{
+  "name": "zenjs",
+  "description": "An XML like template engine for node.js",
+  "version": "0.1",
+  "author": {
+    "name": "Cory Caines",
+    "email": "me@corycaines.com"
+  },
+  "keywords": [
+    "template",
+    "engine",
+    "zenjs"
+  ],
+  "devDependencies": {},
+  "main": "index",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thewebster/zenjs.git"
+  },
+  "readmeFilename": "Readme.md"
+}
