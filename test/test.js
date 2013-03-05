@@ -136,6 +136,8 @@ var Parser = function (src){
 		switch (tag_name.toLowerCase()) {
 			case 'var':
 				return this.parseVarTag(attr);
+			case 'set':
+				return this.parseSetTag(attr);
 			default:
 				return false;
 		}
@@ -170,6 +172,23 @@ var Parser = function (src){
 		return false;
 	}
 
+	/**
+	 * Set tag
+	 * worsk as an assignment operator
+	 */
+	this.parseSetTag = function(attr){
+		if(attr.name) {
+			var src = attr.name;
+			if(attr.value) {
+				src+=' = '+( isNaN(attr.value) ? "'"+attr.value+"';" : attr.value )	
+			}
+			src+=';';
+			return src;
+		}
+		
+		return false;
+	}
+	
 	/** 
    	 * Print helper function
    	 */

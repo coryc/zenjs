@@ -1,3 +1,5 @@
 <p>Hello my name is <z:var name="name"/>:</p>
 	<z:var name="tester" format="upper"/> <br/>
 <p>some more text</p>
+<z:set name="foo" value="hello"/> 
+<p>The foo variable is a "<z:var name="foo"/>"</p>
