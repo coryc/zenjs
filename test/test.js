@@ -6,6 +6,14 @@
 var fs = require('fs'),
 	file = fs.readFileSync;
 
+/* should move to a shared lib or util file */
+// remove leading and trailing
+function trim(str, c) {
+	if(!c) return str;
+	if (c == " ") c = "\\s";
+	return str.replace(new RegExp('^'+c+'+|'+c+'+$', 'g'), '');
+}
+
 var Parser = function (src){
 
 	// Tag Tokens
@@ -17,9 +25,13 @@ var Parser = function (src){
 	// Regular Expressions
 	var zjsOpenTag = /^<z:([-A-Za-z0-9_]+)((?:\s+\w+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/ , 
 		zjsCloseTag = /^<\/z:([-A-Za-z0-9_]+)[^>]*>/,
-		htmlAttr = /([-A-Za-z0-9_]+)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+)))?/g,
+		htmlAttr = /([-A-Za-z0-9_]+)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+)))?/,
 		inlineCss = /([\w-]+)\s*:\s*([^;]+)\s*;?/;
 
+	/**
+	 * Preserve newlines and tabs
+	 * other whitespace characted should be supported
+	 */
 	this.escape = function(str){
 	  return String(str)
 	  			.replace(/[\t]/g, "\\t")
@@ -34,12 +46,16 @@ var Parser = function (src){
 
 			// Open tag
 			if (_src.indexOf(open) == 0) {
-				var match = _src.match(zjsOpenTag);
+				var tag = _src.match(zjsOpenTag);
 
-				if (match) {
-					console.log(match);
-					_src = _src.substring(match[0].length);
-					stack.push('__buf.push(\'test\');');
+				if (tag) {
+					//parse the tag
+					var result = this.parseTag(tag);
+					// adjust the source	
+					_src = _src.substring(tag[0].length);
+
+					// add the result to the stack
+					stack.push(result);
 				}
 			} else {
 				
@@ -103,10 +119,73 @@ var Parser = function (src){
 		return exe;
 	}
 
+	/**
+	 *	Tags parsing
+	 *  *** there could be a better way
+	 */
+
+	this.parseTag = function(tag) {
+
+		var tag_name = tag[1];
+		var attr_str = tag[2];
+		// Parse attributes
+		attr_str = trim(attr_str, " ");
+		attr = this.parseAttr(attr_str);
+
+		// Main Tag Switch
+		switch (tag_name.toLowerCase()) {
+			case 'var':
+				return this.parseVarTag(attr);
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Parse attributes 
+	 * turn attr string into an object
+	 */
+
+	this.parseAttr = function(str) {
+		var attr = {};
+		
+		var parts = str.split(" ");
+		parts = parts.length == 1 ? [str] : parts;
+		for(var i = 0; i <= parts.length-1; i++) {
+			var _attr = parts[i].match(htmlAttr);
+			if(_attr || _attr[1] ) {
+				attr[_attr[1]] = (_attr[2] ? _attr[2] : null);
+			}	
+		}
+				
+		return attr;
+	}
+
+	/**
+	 * Parse Var
+	 */
+	this.parseVarTag = function(attr) {
+		if (attr.name)
+			return this.print_var(attr.name);
+		return false;
+	}
+
+	/** 
+   	 * Print helper function
+   	 */
+	this.print = function(str){
+		return '__buf.push('+str+');';
+	}
+	this.print_var = function(v) {
+		return '__buf.push(('+v+'));';
+	}
+	this.print_str = function(str){
+		return '__buf.push(\''+this.escape(str)+'\');';
+	}
 }
 	
 var src = file('./test/views/test.zjs', 'utf8');
 var parser = new Parser();
 var fn = parser.compile(src);
 
-//console.log(fn.call());
+console.log('\n ==========================\nResult: \n'+fn.call(null, {name:'Cory', tester: 'test'}));
