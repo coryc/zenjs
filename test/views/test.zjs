@@ -1,0 +1,3 @@
+<p>Hello my name is <z:var name="name"/>:</p>
+	<z:var name="tester"/> <br/>
+<p>some more text</p>
